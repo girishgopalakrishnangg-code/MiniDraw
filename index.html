@@ -140,7 +140,7 @@ async function playRound() {
 
   for (let i = 0; i < drawn.length; i++) {
     // Delay before showing each number (including first)
-    await new Promise(r => setTimeout(r, 500 + Math.random() * 200));
+    await new Promise(r => setTimeout(r, 2000));
 
     const num = drawn[i];
     const box = drawnBoxes[i];
