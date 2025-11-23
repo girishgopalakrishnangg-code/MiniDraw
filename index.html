@@ -9,7 +9,12 @@
   h1 { color: #333; }
 
   .grid { display: grid; gap: 10px; justify-content: center; margin: 20px 0; }
-  #drawnGrid { grid-template-columns: repeat(5, 60px); grid-template-rows: repeat(1, 60px); margin: 10px auto; }
+
+  /* UPDATED → 2 rows × 4 columns */
+  #drawnGrid { 
+    grid-template-columns: repeat(4, 60px);
+    grid-template-rows: repeat(2, 60px);
+  }
 
   .box { width: 60px; height: 60px; border: 2px solid #ccc; border-radius: 5px;
          display: flex; align-items: center; justify-content: center; font-weight: bold; background: white; }
@@ -28,14 +33,12 @@
   th { background-color: #87cefa; font-weight: bold; }
   td { font-weight: bold; }
 
-  /* Row colors based on match count */
-  .x0 { background-color: #ffcccc; }    
-  .x1, .x2 { background-color: #fff0b3; } 
-  .x3 { background-color: #ccffcc; }    
-  .x4 { background-color: #99ff99; }    
-  .x5 { background-color: #66ff66; }    
+  .x0 { background-color: #ffcccc; }
+  .x1 { background-color: #fff0b3; }
+  .x2 { background-color: #fff0b3; }
+  .x3 { background-color: #ccffcc; }
+  .x4 { background-color: #99ff99; }
 
-  /* Highlight the row for the current draw */
   .highlight { outline: 3px solid red; outline-offset: -2px; }
 </style>
 </head>
@@ -48,7 +51,7 @@
 
 <h3>Your Numbers</h3>
 <div class="boxes-container" id="selectedBoxes">
-  <div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div>
+  <div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div>
 </div>
 
 <h3>Drawn Numbers</h3>
@@ -57,18 +60,14 @@
 <h3>Probability Table</h3>
 <table id="probTable">
   <thead>
-    <tr>
-      <th>Matches</th>
-      <th>Probability</th>
-    </tr>
+    <tr><th>Matches</th><th>Probability</th></tr>
   </thead>
   <tbody>
-    <tr class="x0"><td>0</td><td>19.37%</td></tr>
-    <tr class="x1"><td>1</td><td>44.02%</td></tr>
-    <tr class="x2"><td>2</td><td>29.35%</td></tr>
-    <tr class="x3"><td>3</td><td>6.77%</td></tr>
-    <tr class="x4"><td>4</td><td>0.48%</td></tr>
-    <tr class="x5"><td>5</td><td>0.00645%</td></tr>
+    <tr class="x0"><td>0</td><td>10.21%</td></tr>
+    <tr class="x1"><td>1</td><td>36.33%</td></tr>
+    <tr class="x2"><td>2</td><td>38.16%</td></tr>
+    <tr class="x3"><td>3</td><td>13.86%</td></tr>
+    <tr class="x4"><td>4</td><td>1.445%</td></tr>
   </tbody>
 </table>
 
@@ -79,7 +78,6 @@ const drawnGrid = document.getElementById('drawnGrid');
 const selectedBoxes = document.getElementById('selectedBoxes').children;
 const probTable = document.getElementById('probTable').querySelector('tbody');
 
-// Helper: pick random distinct numbers from 1..20
 function getRandomNumbers(count, max) {
   const pool = Array.from({ length: max }, (_, i) => i + 1);
   const nums = [];
@@ -90,7 +88,6 @@ function getRandomNumbers(count, max) {
   return nums;
 }
 
-// Create drawn boxes
 function createDrawnBoxes(num) {
   drawnGrid.innerHTML = '';
   for (let i = 0; i < num; i++) {
@@ -100,54 +97,43 @@ function createDrawnBoxes(num) {
   }
 }
 
-// Clear previous table highlights
 function clearTableHighlight() {
   [...probTable.rows].forEach(row => row.classList.remove('highlight'));
 }
 
-// Highlight row corresponding to matches
 function highlightTableRow(matches) {
   const row = probTable.querySelector('.x' + matches);
   if (row) row.classList.add('highlight');
 }
 
-// Play one round
 async function playRound() {
   playBtn.disabled = true;
 
-  // Clear previous table highlight at the start of a new draw
   clearTableHighlight();
-
   drawnGrid.innerHTML = '';
 
-  const selected = getRandomNumbers(5, 20);
-  const drawn = getRandomNumbers(5, 20);
+  const selected = getRandomNumbers(4, 20);
+  const drawn = getRandomNumbers(8, 20);
 
-  // Display player's numbers
   [...selectedBoxes].forEach((box, i) => {
     box.textContent = selected[i];
     box.style.background = 'orange';
-    box.style.borderColor = '#ccc';
     box.classList.remove('hit');
   });
 
-  // Draw numbers
-  createDrawnBoxes(5);
+  createDrawnBoxes(8);
   const drawnBoxes = [...drawnGrid.children];
 
   let hits = 0;
 
   for (let i = 0; i < drawn.length; i++) {
-    // Delay before showing each number (including first)
     await new Promise(r => setTimeout(r, 2000));
 
     const num = drawn[i];
     const box = drawnBoxes[i];
     box.textContent = num;
     box.style.background = 'yellow';
-    box.style.borderColor = 'gold';
 
-    // Highlight matches
     const idx = selected.indexOf(num);
     if (idx >= 0) {
       box.classList.add('hit');
@@ -156,19 +142,15 @@ async function playRound() {
     }
   }
 
-  // Highlight table row for hits
   highlightTableRow(hits);
-
   playBtn.disabled = false;
 }
 
-// Reset screen
 resetBtn.onclick = () => {
   drawnGrid.innerHTML = '';
   [...selectedBoxes].forEach(box => {
     box.textContent = '';
     box.style.background = 'orange';
-    box.style.borderColor = '#ccc';
     box.classList.remove('hit');
   });
   clearTableHighlight();
